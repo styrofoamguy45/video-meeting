@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chill Video Call</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="setup">
+        <input type="text" id="room-input" placeholder="Enter Room Code">
+        <button onclick="joinRoom()">Join / Create Room</button>
+    </div>
+
+    <div id="video-grid">
+        <video id="local-video" autoplay muted></video>
+    </div>
+
+    <div class="controls">
+        <button id="mute-btn" onclick="toggleAudio()">Mute</button>
+        <button id="video-btn" onclick="toggleVideo()">Stop Video</button>
+        <button id="share-btn" onclick="shareScreen()">Share Screen</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
