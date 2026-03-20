@@ -6,10 +6,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="setup">
-        <input type="text" id="room-input" placeholder="Enter Room Code">
-        <button onclick="joinRoom()">Join / Create Room</button>
+   <div id="setup">
+    <div class="setup-box">
+        <div class="action-section">
+            <h3>Start a Meeting</h3>
+            <button id="create-btn" onclick="createRoom()">Create Random Room</button>
+            <p id="room-display" style="display:none;">Room Code: <b id="generated-code"></b></p>
+        </div>
+
+        <hr>
+
+        <div class="action-section">
+            <h3>Join a Meeting</h3>
+            <input type="text" id="room-input" placeholder="Enter Room Code">
+            <button id="join-btn" onclick="joinRoom()">Join Room</button>
+        </div>
     </div>
+</div>
 
     <div id="video-grid">
         <video id="local-video" autoplay muted></video>
