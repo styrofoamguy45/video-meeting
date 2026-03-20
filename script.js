@@ -1,92 +1,74 @@
 let localStream;
-let screenStream;
 let myPeer;
-let currentCall; // To keep track of the active call for screen sharing
+const peers = {}; // Keep track of all connected people
 const videoGrid = document.getElementById('video-grid');
+let roomTimer;
 
-// Get Camera/Mic on start
+// Start camera immediately
 navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
     localStream = stream;
     addVideoStream(document.getElementById('local-video'), stream);
 });
 
-// Helper: Generate a random room code (e.g., ab12-cd34)
-function generateRandomId() {
-    return Math.random().toString(36).substring(2, 6) + '-' + Math.random().toString(36).substring(2, 6);
-}
-
-// CREATE ROOM
 function createRoom() {
-    const randomId = generateRandomId();
-    document.getElementById('room-input').value = randomId; // Put it in the box
-    document.getElementById('generated-code').innerText = randomId;
-    document.getElementById('room-display').style.display = 'block';
-    
-    // Now initialize the peer with this ID
+    const randomId = Math.random().toString(36).substring(2, 7);
+    document.getElementById('room-input').value = randomId;
     startPeerSession(randomId);
+    startRoomTimeout(); // Start the 10-minute "Empty Room" check
 }
 
-// JOIN ROOM
 function joinRoom() {
     const roomId = document.getElementById('room-input').value;
-    if (!roomId) return alert("Please enter a code!");
+    if (!roomId) return alert("Enter code!");
     startPeerSession(roomId);
 }
 
 function startPeerSession(id) {
-    myPeer = new Peer(id); // Using the Room Code as the Peer ID
+    myPeer = new Peer(); // Let PeerJS give us a random unique user ID
 
-    myPeer.on('open', peerId => {
-        console.log('Room active with ID:', peerId);
+    myPeer.on('open', userId => {
+        console.log("My ID:", userId);
         document.getElementById('setup').style.display = 'none';
+        
+        // Use a "Data Connection" to the Room ID to tell others we are here
+        // Note: In a simple GitHub app, the Room ID is actually the first person's ID.
+        const conn = myPeer.connect(id);
+        conn.on('open', () => {
+            conn.send({ type: 'new-user', userId: userId });
+        });
     });
 
-    // Handle being called (someone else joined the room)
+    // Handle being called (Video/Audio)
     myPeer.on('call', call => {
-        currentCall = call;
         call.answer(localStream);
         const video = document.createElement('video');
         call.on('stream', userVideoStream => {
             addVideoStream(video, userVideoStream);
+            clearTimeout(roomTimer); // Someone joined! Stop the countdown.
+        });
+    });
+
+    // Handle someone sending us their ID so we can call them
+    myPeer.on('connection', conn => {
+        conn.on('data', data => {
+            if (data.type === 'new-user') {
+                const call = myPeer.call(data.userId, localStream);
+                const video = document.createElement('video');
+                call.on('stream', userVideoStream => {
+                    addVideoStream(video, userVideoStream);
+                });
+            }
         });
     });
 }
 
-// --- CONTROLS ---
-
-async function shareScreen() {
-    try {
-        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        const videoTrack = screenStream.getVideoTracks()[0];
-
-        // If we are in a call, replace the camera track with the screen track
-        if (currentCall && currentCall.peerConnection) {
-            const sender = currentCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
-            sender.replaceTrack(videoTrack);
-        }
-
-        // Handle when user clicks "Stop Sharing" in the browser UI
-        videoTrack.onended = () => {
-            if (currentCall && currentCall.peerConnection) {
-                const sender = currentCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
-                sender.replaceTrack(localStream.getVideoTracks()[0]);
-            }
-        };
-    } catch (err) {
-        console.error("Error sharing screen:", err);
-    }
-}
-
-function toggleAudio() {
-    const enabled = localStream.getAudioTracks()[0].enabled;
-    localStream.getAudioTracks()[0].enabled = !enabled;
-    document.getElementById('mute-btn').innerText = enabled ? "Unmute" : "Mute";
-}
-
-function toggleVideo() {
-    const enabled = localStream.getVideoTracks()[0].enabled;
-    localStream.getVideoTracks()[0].enabled = !enabled;
-    document.getElementById('video-btn').innerText = enabled ? "Start Video" : "Stop Video";
+// --- ROOM TIMEOUT (10 Minutes) ---
+function startRoomTimeout() {
+    console.log("Room timeout started. 10 minutes until self-destruct.");
+    roomTimer = setTimeout(() => {
+        alert("Room expired: No one joined within 10 minutes.");
+        location.reload(); // Refresh the page to "close" the room
+    }, 600000); // 600,000ms = 10 mins
 }
 
 function addVideoStream(video, stream) {
