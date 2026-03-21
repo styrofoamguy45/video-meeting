@@ -1,107 +1,98 @@
+/* Legacy Browser Compatibility & Base Reset */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
 html, body {
-    background-color: #000000;
-    color: white;
-    font-family: 'Inter', sans-serif; /* Clean, Google-like font */
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow-x: hidden; /* No horizontal scroll */
-    overflow-y: auto;   /* Allow vertical scroll for mobile */
+    background-color: #000;
+    color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    overflow: hidden; /* Prevent PC scrolling */
+}
+
+/* Mobile-only Vertical Scroll */
+@media (max-width: 768px) {
+    body { overflow-y: auto !important; }
+}
+
+/* Modal Popup */
+.modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background: #111; padding: 30px; border-radius: 20px;
+    width: 90%; max-width: 400px; text-align: center;
+    border: 1px solid #333;
 }
 
 /* Custom Black Input */
 .custom-input {
-    background: #121212;
-    color: white;
-    border: 2px solid #333;
-    padding: 12px 20px;
-    border-radius: 10px;
-    outline: none;
-    font-family: inherit;
-    width: 80%;
-    margin-bottom: 20px;
-    transition: border-color 0.3s;
+    background: #000; color: #fff; border: 2px solid #222;
+    padding: 12px; border-radius: 10px; width: 100%;
+    margin-bottom: 20px; font-size: 16px; outline: none;
 }
-
 .custom-input:focus { border-color: #007bff; }
 
+/* Video Grid Logic */
 #video-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-    padding: 80px 20px 120px 20px;
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center; align-items: center;
+    padding: 70px 10px 100px 10px;
+    width: 100%; min-height: 100%;
 }
 
-/* Pinned State Layout */
+/* The "Pinned" Layout: Main video on top, others in a ROW below */
 #video-grid.pinned-active {
-    flex-direction: column;
-    align-items: center;
+    display: flex; flex-direction: column; justify-content: flex-start;
+}
+
+#video-grid.pinned-active .others-row {
+    display: flex; flex-direction: row; overflow-x: auto;
+    width: 100%; gap: 10px; padding: 10px;
 }
 
 .video-container {
-    position: relative;
-    width: 320px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #111;
-    transition: all 0.3s ease;
+    position: relative; 
+    width: 300px; height: 200px; /* Base size */
+    background: #111; border-radius: 15px; overflow: hidden;
 }
 
-/* Enlarged Pinned Video */
-.video-container.pinned {
-    width: 90vw !important;
-    max-width: 1000px;
-    order: -1; /* Moves to top */
-    border: 2px solid #007bff;
-}
-
+/* FIXED: Remove gray spaces by cropping */
 video {
-    width: 100%;
-    display: block;
+    width: 100%; height: 100%;
+    object-fit: cover; /* CROPS the video to fill the box */
     transform: scaleX(-1);
 }
 
-.remote-screen-share video, 
-#my-screen-preview {
+.remote-screen-share video, #my-screen-preview {
     transform: scaleX(1) !important;
+    object-fit: contain; /* Screen shares shouldn't be cropped */
 }
 
-/* Pin Button Styling */
-.pin-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.6);
-    border: none;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    padding: 5px 8px;
-    font-size: 14px;
+/* Pinned Styles */
+.video-container.pinned {
+    width: 100% !important;
+    max-width: 1200px;
+    height: 60vh !important;
+    order: -1;
 }
+
+/* Icon Buttons */
+.icon-btn {
+    background: #222; border: none; border-radius: 50%;
+    width: 50px; height: 50px; cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+}
+.icon-btn img { width: 24px; height: 24px; pointer-events: none; }
+.leave-btn { background: #ff4747; }
 
 .controls {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
+    position: fixed; bottom: 20px; left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    gap: 10px;
-    background: rgba(20, 20, 20, 0.9);
-    padding: 15px;
-    border-radius: 50px;
-    z-index: 100;
-}
-
-button {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 25px;
-    background: #252525;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
+    display: flex; gap: 15px; padding: 10px 20px;
+    background: rgba(15, 15, 15, 0.95);
+    border-radius: 100px; z-index: 100;
 }
