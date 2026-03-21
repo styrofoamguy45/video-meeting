@@ -12,12 +12,11 @@
 
     <div id="room-info" style="display:none;">
         <span>Room: <b id="current-room-id"></b></span>
-        <button class="icon-btn small" onclick="copyRoomCode()">
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m2 3h6M9 19h6M9 15h6M9 11h6m-7-7h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/>
-            </svg>
+        <button class="icon-btn small" onclick="copyRoomCode()" id="copy-btn">
+            <span id="copy-icon-container">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-6 5h6m-6 4h6M10 3v4h4V3h-4Z"/></svg>
+            </span>
         </button>
-        <span id="copy-toast">Copied!</span>
     </div>
 
     <div id="setup-modal" class="modal">
