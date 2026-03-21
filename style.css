@@ -1,98 +1,116 @@
-/* Legacy Browser Compatibility & Base Reset */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
     background-color: #000;
     color: #fff;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Inter', sans-serif;
     margin: 0; padding: 0;
     width: 100%; height: 100%;
-    overflow: hidden; /* Prevent PC scrolling */
+    overflow: hidden; 
 }
 
-/* Mobile-only Vertical Scroll */
+/* Mobile-only Scroll */
 @media (max-width: 768px) {
     body { overflow-y: auto !important; }
 }
 
-/* Modal Popup */
 .modal {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
     display: flex; justify-content: center; align-items: center;
     z-index: 1000;
 }
+
 .modal-content {
-    background: #111; padding: 30px; border-radius: 20px;
-    width: 90%; max-width: 400px; text-align: center;
-    border: 1px solid #333;
+    background: #111; padding: 40px; border-radius: 24px;
+    width: 90%; max-width: 350px; text-align: center;
+    border: 1px solid #222;
 }
 
-/* Custom Black Input */
 .custom-input {
-    background: #000; color: #fff; border: 2px solid #222;
-    padding: 12px; border-radius: 10px; width: 100%;
-    margin-bottom: 20px; font-size: 16px; outline: none;
+    background: #000; color: #fff; border: 2px solid #333;
+    padding: 14px; border-radius: 12px; width: 100%;
+    margin-bottom: 25px; font-size: 16px; outline: none;
 }
 .custom-input:focus { border-color: #007bff; }
 
-/* Video Grid Logic */
+.action-btn {
+    width: 100%; padding: 12px; margin: 5px 0;
+    border-radius: 12px; border: none; background: #007bff;
+    color: white; font-weight: 600; cursor: pointer;
+}
+
 #video-grid {
     display: flex; flex-wrap: wrap; gap: 10px;
     justify-content: center; align-items: center;
-    padding: 70px 10px 100px 10px;
-    width: 100%; min-height: 100%;
+    padding: 80px 10px 120px 10px;
+    width: 100%; min-height: 100vh;
 }
 
-/* The "Pinned" Layout: Main video on top, others in a ROW below */
+/* Pinned State Layout */
 #video-grid.pinned-active {
-    display: flex; flex-direction: column; justify-content: flex-start;
+    flex-direction: column; justify-content: flex-start;
 }
 
-#video-grid.pinned-active .others-row {
-    display: flex; flex-direction: row; overflow-x: auto;
+.others-row {
+    display: flex; flex-direction: row; 
+    overflow-x: auto; overflow-y: hidden;
     width: 100%; gap: 10px; padding: 10px;
+    margin-top: 20px;
+}
+
+.others-row .video-container {
+    width: 180px !important; height: 120px !important;
+    flex-shrink: 0;
 }
 
 .video-container {
-    position: relative; 
-    width: 300px; height: 200px; /* Base size */
-    background: #111; border-radius: 15px; overflow: hidden;
+    position: relative; width: 300px; height: 200px;
+    background: #111; border-radius: 16px; overflow: hidden;
+    transition: all 0.3s ease;
 }
 
-/* FIXED: Remove gray spaces by cropping */
+.video-container.pinned {
+    width: 95vw !important; max-width: 1100px;
+    height: 55vh !important; order: -1;
+    border: 2px solid #007bff;
+}
+
 video {
     width: 100%; height: 100%;
-    object-fit: cover; /* CROPS the video to fill the box */
+    object-fit: cover; /* CROPPING FIX */
     transform: scaleX(-1);
 }
 
 .remote-screen-share video, #my-screen-preview {
     transform: scaleX(1) !important;
-    object-fit: contain; /* Screen shares shouldn't be cropped */
+    object-fit: contain; 
 }
 
-/* Pinned Styles */
-.video-container.pinned {
-    width: 100% !important;
-    max-width: 1200px;
-    height: 60vh !important;
-    order: -1;
+.pin-btn {
+    position: absolute; top: 10px; left: 10px; z-index: 10;
+    background: rgba(0,0,0,0.5); border: none; color: white;
+    border-radius: 8px; cursor: pointer; padding: 5px;
 }
-
-/* Icon Buttons */
-.icon-btn {
-    background: #222; border: none; border-radius: 50%;
-    width: 50px; height: 50px; cursor: pointer;
-    display: flex; justify-content: center; align-items: center;
-}
-.icon-btn img { width: 24px; height: 24px; pointer-events: none; }
-.leave-btn { background: #ff4747; }
 
 .controls {
-    position: fixed; bottom: 20px; left: 50%;
+    position: fixed; bottom: 25px; left: 50%;
     transform: translateX(-50%);
-    display: flex; gap: 15px; padding: 10px 20px;
-    background: rgba(15, 15, 15, 0.95);
+    display: flex; gap: 15px; padding: 12px 25px;
+    background: rgba(20, 20, 20, 0.9);
     border-radius: 100px; z-index: 100;
+}
+
+.icon-btn {
+    background: #333; border: none; border-radius: 50%;
+    width: 54px; height: 54px; cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+}
+.icon-btn.small { width: 35px; height: 35px; margin-left: 10px; }
+.leave-btn { background: #ff4747; }
+
+#room-info {
+    position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+    background: rgba(30, 30, 30, 0.8); padding: 8px 18px;
+    border-radius: 30px; display: flex; align-items: center; z-index: 50;
 }
