@@ -34,7 +34,9 @@
     <div id="video-grid">
         <div class="video-container" id="local-container">
             <div class="name-tag">You</div>
-            <button class="pin-btn" onclick="togglePin('local-container')">📌</button>
+            <button class="pin-btn" onclick="togglePin('local-container')" id="pin-local-container">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0 0v6M9.5 9A2.5 2.5 0 0 1 12 6.5"/></svg>
+            </button>
             <video id="local-video" autoplay muted playsinline></video>
         </div>
     </div>
