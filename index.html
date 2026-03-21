@@ -11,17 +11,19 @@
 <body>
 
     <div id="room-info" style="display:none;">
-        <span>Room Code: <b id="current-room-id"></b></span>
-        <button id="copy-btn" onclick="copyRoomCode()">Copy Code</button>
+        <span>Room: <b id="current-room-id"></b></span>
+        <button class="icon-btn" onclick="copyRoomCode()">
+            <img src="icon-copy.png" alt="Copy" id="copy-icon">
+        </button>
     </div>
 
-    <div id="setup">
-        <div class="setup-box">
-            <h2>Video Meeting</h2>
-            <input type="text" id="room-input" class="custom-input" placeholder="Enter Room Code">
-            <div class="button-group">
-                <button onclick="createRoom()">Create Room</button>
-                <button onclick="joinRoom()">Join Room</button>
+    <div id="setup-modal" class="modal">
+        <div class="modal-content">
+            <h2>Join Meeting</h2>
+            <input type="text" id="room-input" class="custom-input" placeholder="Room Code">
+            <div class="modal-buttons">
+                <button class="action-btn" onclick="createRoom()">Create</button>
+                <button class="action-btn" onclick="joinRoom()">Join</button>
             </div>
         </div>
     </div>
@@ -34,11 +36,21 @@
     </div>
 
     <div class="controls">
-        <button id="mute-btn" onclick="toggleAudio()">Mute</button>
-        <button id="video-btn" onclick="toggleVideo()">Stop Video</button>
-        <button id="share-btn" onclick="shareScreen()">Share Screen</button>
-        <button id="stop-share-btn" onclick="stopSharing()" style="display:none; background:#ff9800;">Stop Sharing</button>
-        <button id="leave-btn" onclick="leaveRoom()" style="background: #ff4747;">Leave</button>
+        <button class="icon-btn" onclick="toggleAudio()" title="Mute/Unmute">
+            <img src="icon-mute.png" id="mute-icon" alt="Mute">
+        </button>
+        <button class="icon-btn" onclick="toggleVideo()" title="Camera On/Off">
+            <img src="icon-video.png" id="video-icon" alt="Video">
+        </button>
+        <button class="icon-btn" onclick="shareScreen()" id="share-btn" title="Share Screen">
+            <img src="icon-share.png" alt="Share">
+        </button>
+        <button class="icon-btn" onclick="stopSharing()" id="stop-share-btn" style="display:none;" title="Stop Sharing">
+            <img src="icon-stop.png" alt="Stop">
+        </button>
+        <button class="icon-btn leave-btn" onclick="leaveRoom()" title="Leave">
+            <img src="icon-leave.png" alt="Leave">
+        </button>
     </div>
 
     <script src="script.js"></script>
