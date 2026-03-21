@@ -12,14 +12,12 @@
     <div id="setup">
         <div class="setup-box">
             <h2>Video Meeting</h2>
-            <div class="input-group">
-                <input type="text" id="room-input" placeholder="Enter Room Code">
-            </div>
+            <input type="text" id="room-input" placeholder="Enter Room Code">
             <div class="button-group">
                 <button id="create-btn" onclick="createRoom()">Create New Room</button>
                 <button id="join-btn" onclick="joinRoom()">Join Room</button>
             </div>
-            <p id="status-msg" style="color: #888; font-size: 0.8em; margin-top: 10px;">Waiting for action...</p>
+            <p id="status-msg">Waiting for action...</p>
         </div>
     </div>
 
@@ -31,6 +29,7 @@
         <button id="mute-btn" onclick="toggleAudio()">Mute</button>
         <button id="video-btn" onclick="toggleVideo()">Stop Video</button>
         <button id="share-btn" onclick="shareScreen()">Share Screen</button>
+        <button id="stop-share-btn" onclick="stopSharing()" style="display:none; background:#ff9800;">Stop Sharing</button>
         <button id="leave-btn" onclick="leaveRoom()" style="background: #ff4747;">Leave</button>
     </div>
 
