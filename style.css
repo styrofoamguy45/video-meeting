@@ -1,136 +1,95 @@
-let localStream;
-let screenStream;
-let myPeer;
-const videoGrid = document.getElementById('video-grid');
-const connectedPeers = {};
-
-async function startCamera() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        localStream = stream;
-        document.getElementById('local-video').srcObject = stream;
-    } catch (err) { console.error("Camera Error:", err); }
-}
-startCamera();
-
-window.createRoom = function() {
-    const randomRoomId = Math.random().toString(36).substring(2, 7);
-    document.getElementById('room-input').value = randomRoomId;
-    initializePeer(randomRoomId);
-};
-
-window.joinRoom = function() {
-    const roomId = document.getElementById('room-input').value;
-    if (!roomId) return alert("Enter code!");
-    initializePeer(null, roomId);
-};
-
-window.copyRoomCode = function() {
-    const code = document.getElementById('current-room-id').innerText;
-    navigator.clipboard.writeText(code);
-    document.getElementById('copy-btn').innerText = "Copied!";
-    setTimeout(() => document.getElementById('copy-btn').innerText = "Copy Code", 2000);
-};
-
-function initializePeer(id, roomToJoin = null) {
-    if (myPeer) myPeer.destroy();
-    myPeer = new Peer(id, {
-        config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
-    });
-
-    myPeer.on('open', myId => {
-        document.getElementById('setup').style.display = 'none';
-        const activeRoomId = roomToJoin || myId;
-        document.getElementById('current-room-id').innerText = activeRoomId;
-        document.getElementById('room-info').style.display = 'flex';
-        if (roomToJoin) myPeer.call(roomToJoin, localStream);
-    });
-
-    myPeer.on('call', call => {
-        call.answer(localStream);
-        handleCall(call);
-    });
+body {
+    background-color: #121212;
+    color: white;
+    font-family: sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
 }
 
-function handleCall(call) {
-    const streamType = (call.metadata && call.metadata.type === 'screen') ? 'screen' : 'cam';
-    const streamId = `video-${call.peer}-${streamType}`;
-
-    call.on('stream', remoteStream => {
-        if (!document.getElementById(streamId)) {
-            const video = document.createElement('video');
-            video.id = streamId;
-            video.srcObject = remoteStream;
-            video.autoplay = true;
-            video.playsInline = true;
-            video.classList.add('active');
-            if (streamType === 'screen') video.classList.add('remote-screen-share');
-            videoGrid.appendChild(video);
-            connectedPeers[streamId] = call;
-        }
-    });
-
-    // Handle when someone stops sharing or leaves
-    call.on('close', () => {
-        document.getElementById(streamId)?.remove();
-        delete connectedPeers[streamId];
-    });
+#room-info {
+    position: fixed;
+    top: 10px;
+    background: rgba(40, 40, 40, 0.8);
+    padding: 10px 20px;
+    border-radius: 30px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-window.shareScreen = async function() {
-    try {
-        // Updated for mobile compatibility attempt
-        const mediaDevices = navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia;
-        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        
-        const screenVideo = document.createElement('video');
-        screenVideo.id = 'my-screen-preview';
-        screenVideo.srcObject = screenStream;
-        screenVideo.autoplay = true;
-        screenVideo.classList.add('active', 'screen-share');
-        videoGrid.appendChild(screenVideo);
+#setup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
 
-        document.getElementById('share-btn').style.display = 'none';
-        document.getElementById('stop-share-btn').style.display = 'inline-block';
+.setup-box {
+    background: #1e1e1e;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+}
 
-        // Notify everyone and start the screen call
-        Object.keys(connectedPeers).forEach(key => {
-            const peerId = connectedPeers[key].peer;
-            myPeer.call(peerId, screenStream, { metadata: { type: 'screen' } });
-        });
+#video-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    padding: 80px 20px;
+    width: 100%;
+}
 
-        screenStream.getVideoTracks()[0].onended = () => window.stopSharing();
-    } catch (err) { alert("Screen share not supported or cancelled."); }
-};
+video {
+    width: 350px;
+    background: #000;
+    border-radius: 12px;
+    display: none;
+    transform: scaleX(-1); 
+}
 
-window.stopSharing = function() {
-    if (screenStream) {
-        screenStream.getTracks().forEach(track => track.stop());
-        document.getElementById('my-screen-preview')?.remove();
-        
-        // This is the CRITICAL fix: Reload the peer connections to force a "close" signal
-        // on the screen streams for everyone else.
-        Object.keys(connectedPeers).forEach(key => {
-            if (key.includes('screen')) {
-                connectedPeers[key].close();
-                delete connectedPeers[key];
-            }
-        });
-    }
-    document.getElementById('share-btn').style.display = 'inline-block';
-    document.getElementById('stop-share-btn').style.display = 'none';
-};
+/* Screen shares are NEVER flipped */
+#my-screen-preview, 
+video.remote-screen-share {
+    transform: scaleX(1) !important; 
+    width: 600px !important;
+    border: 2px solid #007bff;
+    display: block !important;
+}
 
-window.toggleAudio = function() {
-    const enabled = localStream.getAudioTracks()[0].enabled;
-    localStream.getAudioTracks()[0].enabled = !enabled;
-    document.getElementById('mute-btn').innerText = enabled ? "Unmute" : "Mute";
-};
+video.active { display: block; }
 
-window.toggleVideo = function() {
-    const enabled = localStream.getVideoTracks()[0].enabled;
-    localStream.getVideoTracks()[0].enabled = !enabled;
-    document.getElementById('video-btn').innerText = enabled ? "Start Video" : "Stop Video";
-};
+.controls {
+    position: fixed;
+    bottom: 20px;
+    display: flex;
+    gap: 10px;
+    background: rgba(30, 30, 30, 0.8);
+    padding: 15px;
+    border-radius: 50px;
+}
 
-window.leaveRoom = function() { location.reload(); };
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    background: #333;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+input {
+    padding: 10px;
+    background: #222;
+    color: white;
+    border: 1px solid #444;
+    margin-bottom: 10px;
+}
