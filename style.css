@@ -9,7 +9,6 @@ body {
     height: 100vh;
 }
 
-/* Room Info Top Bar */
 #room-info {
     position: fixed;
     top: 10px;
@@ -21,12 +20,6 @@ body {
     align-items: center;
     gap: 15px;
     border: 1px solid #444;
-}
-
-#copy-btn {
-    padding: 5px 12px;
-    font-size: 0.8em;
-    background: #007bff;
 }
 
 #setup {
@@ -51,7 +44,7 @@ body {
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
-    padding: 60px 20px 20px 20px; /* Extra top padding for room-info */
+    padding: 60px 20px 20px 20px;
     width: 100%;
 }
 
