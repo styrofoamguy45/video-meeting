@@ -38,12 +38,17 @@ window.copyRoomCode = function() {
 
 function initializePeer(id, roomToJoin = null) {
     if (myPeer) myPeer.destroy();
-    myPeer = new Peer(id);
+    
+    // PeerJS configuration for legacy support (Windows 7/Old Browsers)
+    myPeer = new Peer(id, {
+        config: { 
+            'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }],
+            'sdpSemantics': 'unified-plan'
+        }
+    });
 
     myPeer.on('open', myId => {
         document.getElementById('setup').style.display = 'none';
-        
-        // Show Room Info Top Bar
         const activeRoomId = roomToJoin || myId;
         document.getElementById('current-room-id').innerText = activeRoomId;
         document.getElementById('room-info').style.display = 'flex';
