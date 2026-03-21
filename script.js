@@ -4,7 +4,6 @@ let myPeer;
 const videoGrid = document.getElementById('video-grid');
 const connectedPeers = {};
 
-// Initialize Camera
 async function startCamera() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -29,12 +28,26 @@ window.joinRoom = function() {
     initializePeer(null, roomId);
 };
 
+window.copyRoomCode = function() {
+    const code = document.getElementById('current-room-id').innerText;
+    navigator.clipboard.writeText(code);
+    const btn = document.getElementById('copy-btn');
+    btn.innerText = "Copied!";
+    setTimeout(() => btn.innerText = "Copy Code", 2000);
+};
+
 function initializePeer(id, roomToJoin = null) {
     if (myPeer) myPeer.destroy();
     myPeer = new Peer(id);
 
     myPeer.on('open', myId => {
         document.getElementById('setup').style.display = 'none';
+        
+        // Show Room Info Top Bar
+        const activeRoomId = roomToJoin || myId;
+        document.getElementById('current-room-id').innerText = activeRoomId;
+        document.getElementById('room-info').style.display = 'flex';
+
         if (roomToJoin) {
             const call = myPeer.call(roomToJoin, localStream);
             handleCall(call);
@@ -78,8 +91,6 @@ function handleCall(call) {
 window.shareScreen = async function() {
     try {
         screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        
-        // Create YOUR preview
         const screenVideo = document.createElement('video');
         screenVideo.id = 'my-screen-preview';
         screenVideo.srcObject = screenStream;
@@ -87,11 +98,9 @@ window.shareScreen = async function() {
         screenVideo.classList.add('active');
         videoGrid.appendChild(screenVideo);
 
-        // UI toggles
         document.getElementById('share-btn').style.display = 'none';
         document.getElementById('stop-share-btn').style.display = 'inline-block';
 
-        // Call everyone with the screen
         Object.keys(connectedPeers).forEach(peerId => {
             const targetId = peerId.replace('cam', '').replace('screen', '');
             myPeer.call(targetId, screenStream, { metadata: { type: 'screen' } });

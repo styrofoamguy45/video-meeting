@@ -9,6 +9,26 @@ body {
     height: 100vh;
 }
 
+/* Room Info Top Bar */
+#room-info {
+    position: fixed;
+    top: 10px;
+    background: rgba(40, 40, 40, 0.8);
+    padding: 10px 20px;
+    border-radius: 30px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid #444;
+}
+
+#copy-btn {
+    padding: 5px 12px;
+    font-size: 0.8em;
+    background: #007bff;
+}
+
 #setup {
     position: fixed;
     inset: 0;
@@ -31,11 +51,10 @@ body {
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
-    padding: 20px;
+    padding: 60px 20px 20px 20px; /* Extra top padding for room-info */
     width: 100%;
 }
 
-/* Mirror cameras by default */
 video {
     width: 350px;
     max-width: 90%;
@@ -45,7 +64,6 @@ video {
     transform: scaleX(-1); 
 }
 
-/* THE FIX: Force screen shares NOT to flip */
 #my-screen-preview, 
 video.remote-screen-share {
     transform: scaleX(1) !important; 
