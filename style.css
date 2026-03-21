@@ -35,7 +35,7 @@ body {
     width: 100%;
 }
 
-/* Default: Mirror all videos (feels natural for cameras) */
+/* Mirror cameras by default */
 video {
     width: 350px;
     max-width: 90%;
@@ -45,11 +45,13 @@ video {
     transform: scaleX(-1); 
 }
 
-/* THE MIRROR FIX: Do NOT mirror screen shares so text is readable */
-video.screen-share {
+/* THE FIX: Force screen shares NOT to flip */
+#my-screen-preview, 
+video.remote-screen-share {
     transform: scaleX(1) !important; 
-    width: 600px;
+    width: 600px !important;
     border: 2px solid #007bff;
+    display: block !important;
 }
 
 video.active {
