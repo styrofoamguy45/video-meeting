@@ -9,90 +9,65 @@ html, body {
     overflow: hidden; 
 }
 
-/* Mobile-only Scroll */
+/* Mobile-only Scroll Logic */
 @media (max-width: 768px) {
     body { overflow-y: auto !important; }
 }
 
+/* Modal UI */
 .modal {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.95);
+    background: rgba(0,0,0,0.96);
     display: flex; justify-content: center; align-items: center;
     z-index: 1000;
 }
-
 .modal-content {
     background: #111; padding: 40px; border-radius: 24px;
     width: 90%; max-width: 350px; text-align: center;
     border: 1px solid #222;
 }
-
 .custom-input {
     background: #000; color: #fff; border: 2px solid #333;
     padding: 14px; border-radius: 12px; width: 100%;
     margin-bottom: 25px; font-size: 16px; outline: none;
 }
 .custom-input:focus { border-color: #007bff; }
-
 .action-btn {
     width: 100%; padding: 12px; margin: 5px 0;
     border-radius: 12px; border: none; background: #007bff;
     color: white; font-weight: 600; cursor: pointer;
 }
 
+/* Video Grid and Row Logic */
 #video-grid {
     display: flex; flex-wrap: wrap; gap: 10px;
     justify-content: center; align-items: center;
     padding: 80px 10px 120px 10px;
     width: 100%; min-height: 100vh;
 }
-
-/* Pinned State Layout */
-#video-grid.pinned-active {
-    flex-direction: column; justify-content: flex-start;
-}
+#video-grid.pinned-active { flex-direction: column; justify-content: flex-start; }
 
 .others-row {
     display: flex; flex-direction: row; 
     overflow-x: auto; overflow-y: hidden;
-    width: 100%; gap: 10px; padding: 10px;
-    margin-top: 20px;
+    width: 100%; gap: 10px; padding: 15px;
 }
-
-.others-row .video-container {
-    width: 180px !important; height: 120px !important;
-    flex-shrink: 0;
-}
+.others-row .video-container { width: 180px !important; height: 110px !important; flex-shrink: 0; }
 
 .video-container {
     position: relative; width: 300px; height: 200px;
     background: #111; border-radius: 16px; overflow: hidden;
-    transition: all 0.3s ease;
 }
-
 .video-container.pinned {
     width: 95vw !important; max-width: 1100px;
     height: 55vh !important; order: -1;
     border: 2px solid #007bff;
 }
 
-video {
-    width: 100%; height: 100%;
-    object-fit: cover; /* CROPPING FIX */
-    transform: scaleX(-1);
-}
+video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.remote-screen-share video, #my-screen-preview { transform: scaleX(1) !important; object-fit: contain; }
 
-.remote-screen-share video, #my-screen-preview {
-    transform: scaleX(1) !important;
-    object-fit: contain; 
-}
-
-.pin-btn {
-    position: absolute; top: 10px; left: 10px; z-index: 10;
-    background: rgba(0,0,0,0.5); border: none; color: white;
-    border-radius: 8px; cursor: pointer; padding: 5px;
-}
-
+/* Control Buttons */
 .controls {
     position: fixed; bottom: 25px; left: 50%;
     transform: translateX(-50%);
@@ -100,17 +75,23 @@ video {
     background: rgba(20, 20, 20, 0.9);
     border-radius: 100px; z-index: 100;
 }
-
 .icon-btn {
-    background: #333; border: none; border-radius: 50%;
+    background: #252525; border: none; border-radius: 50%;
     width: 54px; height: 54px; cursor: pointer;
     display: flex; justify-content: center; align-items: center;
 }
-.icon-btn.small { width: 35px; height: 35px; margin-left: 10px; }
-.leave-btn { background: #ff4747; }
+.icon-btn.small { width: 35px; height: 35px; margin-left: 8px; }
+.leave-btn { background: #ff4747 !important; }
+
+/* Copy Toast */
+#copy-toast {
+    font-size: 12px; color: #007bff; font-weight: 600;
+    margin-left: 10px; opacity: 0; transition: opacity 0.3s;
+}
+#copy-toast.show { opacity: 1; }
 
 #room-info {
     position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-    background: rgba(30, 30, 30, 0.8); padding: 8px 18px;
+    background: rgba(20, 20, 20, 0.9); padding: 8px 18px;
     border-radius: 30px; display: flex; align-items: center; z-index: 50;
 }
