@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chill Video Call</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -17,7 +18,7 @@
     <div id="setup">
         <div class="setup-box">
             <h2>Video Meeting</h2>
-            <input type="text" id="room-input" placeholder="Enter Room Code">
+            <input type="text" id="room-input" class="custom-input" placeholder="Enter Room Code">
             <div class="button-group">
                 <button onclick="createRoom()">Create Room</button>
                 <button onclick="joinRoom()">Join Room</button>
@@ -26,7 +27,10 @@
     </div>
 
     <div id="video-grid">
-        <video id="local-video" autoplay muted playsinline class="active"></video>
+        <div class="video-container" id="local-container">
+            <button class="pin-btn" onclick="togglePin('local-container')">📌</button>
+            <video id="local-video" autoplay muted playsinline class="active"></video>
+        </div>
     </div>
 
     <div class="controls">
