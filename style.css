@@ -19,7 +19,6 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    border: 1px solid #444;
 }
 
 #setup {
@@ -44,19 +43,19 @@ body {
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
-    padding: 60px 20px 20px 20px;
+    padding: 80px 20px;
     width: 100%;
 }
 
 video {
     width: 350px;
-    max-width: 90%;
     background: #000;
     border-radius: 12px;
     display: none;
     transform: scaleX(-1); 
 }
 
+/* Screen shares are NEVER flipped */
 #my-screen-preview, 
 video.remote-screen-share {
     transform: scaleX(1) !important; 
@@ -65,9 +64,7 @@ video.remote-screen-share {
     display: block !important;
 }
 
-video.active {
-    display: block;
-}
+video.active { display: block; }
 
 .controls {
     position: fixed;
@@ -77,7 +74,6 @@ video.active {
     background: rgba(30, 30, 30, 0.8);
     padding: 15px;
     border-radius: 50px;
-    backdrop-filter: blur(10px);
 }
 
 button {
