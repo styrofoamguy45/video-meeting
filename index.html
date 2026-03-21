@@ -1,32 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chill Video Call</title>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div id="setup">
-    <input type="text" id="room-input" placeholder="Room Code">
-    <button onclick="createRoom()">Create Room</button>
-    <button onclick="joinRoom()">Join Room</button>
-</div>
-
-<div id="video-grid">
-    <video id="local-video" autoplay muted playsinline></video>
-</div>
-</div>
-
-    <div id="video-grid">
-        <video id="local-video" autoplay muted></video>
+        <div class="setup-box">
+            <h2>Video Meeting</h2>
+            <div class="input-group">
+                <input type="text" id="room-input" placeholder="Enter Room Code">
+            </div>
+            <div class="button-group">
+                <button id="create-btn" onclick="createRoom()">Create New Room</button>
+                <button id="join-btn" onclick="joinRoom()">Join Room</button>
+            </div>
+            <p id="status-msg" style="color: #888; font-size: 0.8em; margin-top: 10px;">Waiting for action...</p>
+        </div>
     </div>
 
-   <div class="controls">
-    <button id="mute-btn" onclick="toggleAudio()">Mute</button>
-    <button id="video-btn" onclick="toggleVideo()">Stop Video</button>
-    <button id="share-btn" onclick="shareScreen()">Share Screen</button>
-    <button id="leave-btn" onclick="leaveRoom()" style="background:red;">Leave Room</button>
-</div>
+    <div id="video-grid">
+        <video id="local-video" autoplay muted playsinline></video>
+    </div>
+
+    <div class="controls">
+        <button id="mute-btn" onclick="toggleAudio()">Mute</button>
+        <button id="video-btn" onclick="toggleVideo()">Stop Video</button>
+        <button id="share-btn" onclick="shareScreen()">Share Screen</button>
+        <button id="leave-btn" onclick="leaveRoom()" style="background: #ff4747;">Leave</button>
+    </div>
 
     <script src="script.js"></script>
 </body>

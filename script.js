@@ -1,22 +1,28 @@
-console.log("LOG: Script started loading...");
-
-// --- GLOBAL VARIABLES ---
 let localStream;
 let myPeer;
 const videoGrid = document.getElementById('video-grid');
-const connectedPeers = {}; 
+const connectedPeers = {};
 
-// --- INITIALIZE CAMERA ---
-navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    .then(stream => {
-        console.log("LOG: Camera access granted.");
+// 1. Initialize Camera immediately
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         localStream = stream;
         const localVideo = document.getElementById('local-video');
-        if (localVideo) localVideo.srcObject = stream;
-    })
-    .catch(err => console.error("Media error:", err));
+        if (localVideo) {
+            localVideo.srcObject = stream;
+            localVideo.classList.add('active'); // Show local video
+        }
+    } catch (err) {
+        console.error("Camera Error:", err);
+        document.getElementById('status-msg').innerText = "Please allow camera access!";
+    }
+}
 
-// --- ROOM FUNCTIONS ---
+startCamera();
+
+// --- BUTTON FUNCTIONS ---
+
 window.createRoom = function() {
     const randomRoomId = Math.random().toString(36).substring(2, 7);
     document.getElementById('room-input').value = randomRoomId;
@@ -25,7 +31,7 @@ window.createRoom = function() {
 
 window.joinRoom = function() {
     const roomId = document.getElementById('room-input').value;
-    if (!roomId) return alert("Enter a code!");
+    if (!roomId) return alert("Enter code!");
     initializePeer(null, roomId);
 };
 
@@ -34,8 +40,8 @@ function initializePeer(id, roomToJoin = null) {
     myPeer = new Peer(id);
 
     myPeer.on('open', myId => {
-        console.log("LOG: Peer opened with ID:", myId);
         document.getElementById('setup').style.display = 'none';
+        console.log("My Peer ID:", myId);
         if (roomToJoin) {
             const call = myPeer.call(roomToJoin, localStream);
             handleCall(call);
@@ -50,7 +56,8 @@ function initializePeer(id, roomToJoin = null) {
 
 function handleCall(call) {
     const video = document.createElement('video');
-    video.id = `video-${call.peer}`; 
+    video.setAttribute('playsinline', 'true');
+    video.id = `video-${call.peer}`;
 
     call.on('stream', remoteStream => {
         if (!connectedPeers[call.peer]) {
@@ -60,13 +67,13 @@ function handleCall(call) {
     });
 
     call.on('close', () => {
-        const remoteVideo = document.getElementById(`video-${call.peer}`);
-        if (remoteVideo) remoteVideo.remove();
+        video.remove();
         delete connectedPeers[call.peer];
     });
 }
 
-// --- CONTROL FUNCTIONS ---
+// --- CONTROLS ---
+
 window.toggleAudio = function() {
     const enabled = localStream.getAudioTracks()[0].enabled;
     localStream.getAudioTracks()[0].enabled = !enabled;
@@ -80,13 +87,18 @@ window.toggleVideo = function() {
 };
 
 window.shareScreen = async function() {
+    if (!navigator.mediaDevices.getDisplayMedia) {
+        return alert("Screen sharing is not supported on this device/browser.");
+    }
     try {
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         const videoTrack = screenStream.getVideoTracks()[0];
+        
         Object.values(connectedPeers).forEach(call => {
             const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
             sender.replaceTrack(videoTrack);
         });
+
         videoTrack.onended = () => {
             Object.values(connectedPeers).forEach(call => {
                 const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
@@ -97,15 +109,12 @@ window.shareScreen = async function() {
 };
 
 window.leaveRoom = function() {
-    if (myPeer) myPeer.destroy();
-    location.reload();
+    location.reload(); 
 };
 
 function addVideoStream(video, stream) {
     video.srcObject = stream;
+    video.classList.add('active');
     video.autoplay = true;
-    video.playsInline = true;
     videoGrid.append(video);
 }
-
-console.log("LOG: Script fully loaded and functions are mapped to window.");
