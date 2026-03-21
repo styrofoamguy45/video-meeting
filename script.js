@@ -8,11 +8,8 @@ async function startCamera() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         localStream = stream;
-        const localVideo = document.getElementById('local-video');
-        if (localVideo) localVideo.srcObject = stream;
-    } catch (err) {
-        console.error("Camera Error:", err);
-    }
+        document.getElementById('local-video').srcObject = stream;
+    } catch (err) { console.error("Camera Error:", err); }
 }
 startCamera();
 
@@ -31,20 +28,14 @@ window.joinRoom = function() {
 window.copyRoomCode = function() {
     const code = document.getElementById('current-room-id').innerText;
     navigator.clipboard.writeText(code);
-    const btn = document.getElementById('copy-btn');
-    btn.innerText = "Copied!";
-    setTimeout(() => btn.innerText = "Copy Code", 2000);
+    document.getElementById('copy-btn').innerText = "Copied!";
+    setTimeout(() => document.getElementById('copy-btn').innerText = "Copy Code", 2000);
 };
 
 function initializePeer(id, roomToJoin = null) {
     if (myPeer) myPeer.destroy();
-    
-    // PeerJS configuration for legacy support (Windows 7/Old Browsers)
     myPeer = new Peer(id, {
-        config: { 
-            'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }],
-            'sdpSemantics': 'unified-plan'
-        }
+        config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
     });
 
     myPeer.on('open', myId => {
@@ -52,11 +43,7 @@ function initializePeer(id, roomToJoin = null) {
         const activeRoomId = roomToJoin || myId;
         document.getElementById('current-room-id').innerText = activeRoomId;
         document.getElementById('room-info').style.display = 'flex';
-
-        if (roomToJoin) {
-            const call = myPeer.call(roomToJoin, localStream);
-            handleCall(call);
-        }
+        if (roomToJoin) myPeer.call(roomToJoin, localStream);
     });
 
     myPeer.on('call', call => {
@@ -66,10 +53,10 @@ function initializePeer(id, roomToJoin = null) {
 }
 
 function handleCall(call) {
-    call.on('stream', remoteStream => {
-        const streamType = (call.metadata && call.metadata.type === 'screen') ? 'screen' : 'cam';
-        const streamId = `video-${call.peer}-${streamType}`;
+    const streamType = (call.metadata && call.metadata.type === 'screen') ? 'screen' : 'cam';
+    const streamId = `video-${call.peer}-${streamType}`;
 
+    call.on('stream', remoteStream => {
         if (!document.getElementById(streamId)) {
             const video = document.createElement('video');
             video.id = streamId;
@@ -77,48 +64,58 @@ function handleCall(call) {
             video.autoplay = true;
             video.playsInline = true;
             video.classList.add('active');
-
-            if (streamType === 'screen') {
-                video.classList.add('remote-screen-share');
-            }
-
+            if (streamType === 'screen') video.classList.add('remote-screen-share');
             videoGrid.appendChild(video);
-            connectedPeers[call.peer + streamType] = call;
+            connectedPeers[streamId] = call;
         }
     });
 
+    // Handle when someone stops sharing or leaves
     call.on('close', () => {
-        document.getElementById(`video-${call.peer}-cam`)?.remove();
-        document.getElementById(`video-${call.peer}-screen`)?.remove();
+        document.getElementById(streamId)?.remove();
+        delete connectedPeers[streamId];
     });
 }
 
 window.shareScreen = async function() {
     try {
+        // Updated for mobile compatibility attempt
+        const mediaDevices = navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia;
         screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        
         const screenVideo = document.createElement('video');
         screenVideo.id = 'my-screen-preview';
         screenVideo.srcObject = screenStream;
         screenVideo.autoplay = true;
-        screenVideo.classList.add('active');
+        screenVideo.classList.add('active', 'screen-share');
         videoGrid.appendChild(screenVideo);
 
         document.getElementById('share-btn').style.display = 'none';
         document.getElementById('stop-share-btn').style.display = 'inline-block';
 
-        Object.keys(connectedPeers).forEach(peerId => {
-            const targetId = peerId.replace('cam', '').replace('screen', '');
-            myPeer.call(targetId, screenStream, { metadata: { type: 'screen' } });
+        // Notify everyone and start the screen call
+        Object.keys(connectedPeers).forEach(key => {
+            const peerId = connectedPeers[key].peer;
+            myPeer.call(peerId, screenStream, { metadata: { type: 'screen' } });
         });
 
         screenStream.getVideoTracks()[0].onended = () => window.stopSharing();
-    } catch (err) { console.error(err); }
+    } catch (err) { alert("Screen share not supported or cancelled."); }
 };
 
 window.stopSharing = function() {
     if (screenStream) {
         screenStream.getTracks().forEach(track => track.stop());
         document.getElementById('my-screen-preview')?.remove();
+        
+        // This is the CRITICAL fix: Reload the peer connections to force a "close" signal
+        // on the screen streams for everyone else.
+        Object.keys(connectedPeers).forEach(key => {
+            if (key.includes('screen')) {
+                connectedPeers[key].close();
+                delete connectedPeers[key];
+            }
+        });
     }
     document.getElementById('share-btn').style.display = 'inline-block';
     document.getElementById('stop-share-btn').style.display = 'none';
