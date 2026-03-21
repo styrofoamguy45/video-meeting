@@ -1,62 +1,55 @@
-let localStream;
-let screenStream;
-let myPeer;
-const videoGrid = document.getElementById('video-grid');
-const connections = {}; // Stores DataConnections
-const calls = {}; // Stores MediaCalls
+var localStream;
+var screenStream;
+var myPeer;
+var videoGrid = document.getElementById('video-grid');
+var connections = {}; 
+var calls = {}; 
 
-// For Android: Start camera ONLY after a button click to satisfy security
 async function initMedia() {
     if (localStream) return;
     try {
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById('local-video').srcObject = localStream;
     } catch (err) {
-        alert("Camera access denied. Please use HTTPS and allow permissions.");
+        alert("Camera error. Use HTTPS and allow permissions.");
     }
 }
 
 window.createRoom = async function() {
     await initMedia();
-    const id = Math.random().toString(36).substring(2, 7);
+    var id = Math.random().toString(36).substring(2, 7);
     document.getElementById('room-input').value = id;
     initializePeer(id);
 };
 
 window.joinRoom = async function() {
     await initMedia();
-    const roomId = document.getElementById('room-input').value;
+    var roomId = document.getElementById('room-input').value;
     if (!roomId) return alert("Enter code!");
     initializePeer(null, roomId);
 };
 
-function initializePeer(id, roomToJoin = null) {
+function initializePeer(id, roomToJoin) {
     myPeer = new Peer(id, {
-        config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] },
-        debug: 1
+        config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
     });
 
-    myPeer.on('open', myId => {
+    myPeer.on('open', function(myId) {
         document.getElementById('setup').style.display = 'none';
-        const activeId = roomToJoin || myId;
+        var activeId = roomToJoin || myId;
         document.getElementById('current-room-id').innerText = activeId;
         document.getElementById('room-info').style.display = 'flex';
 
         if (roomToJoin) {
-            // 1. Connect for Data (to send "stop screen" signals)
-            const conn = myPeer.connect(roomToJoin);
+            var conn = myPeer.connect(roomToJoin);
             setupDataConnection(conn);
-            // 2. Call for Video
-            const call = myPeer.call(roomToJoin, localStream);
+            var call = myPeer.call(roomToJoin, localStream);
             setupMediaCall(call);
         }
     });
 
-    // Listen for incoming Data
-    myPeer.on('connection', conn => setupDataConnection(conn));
-
-    // Listen for incoming Calls
-    myPeer.on('call', call => {
+    myPeer.on('connection', function(conn) { setupDataConnection(conn); });
+    myPeer.on('call', function(call) {
         call.answer(localStream);
         setupMediaCall(call);
     });
@@ -64,24 +57,26 @@ function initializePeer(id, roomToJoin = null) {
 
 function setupDataConnection(conn) {
     connections[conn.peer] = conn;
-    conn.on('data', data => {
+    conn.on('data', function(data) {
         if (data.type === 'stop-screen') {
-            document.getElementById(`video-${conn.peer}-screen`)?.remove();
+            // AGGRESSIVE REMOVAL
+            var el = document.getElementById('video-' + conn.peer + '-screen');
+            if (el) el.parentNode.removeChild(el);
         }
     });
 }
 
 function setupMediaCall(call) {
-    const type = (call.metadata && call.metadata.type === 'screen') ? 'screen' : 'cam';
-    const streamId = `video-${call.peer}-${type}`;
+    var type = (call.metadata && call.metadata.type === 'screen') ? 'screen' : 'cam';
+    var streamId = 'video-' + call.peer + '-' + type;
 
-    call.on('stream', stream => {
+    call.on('stream', function(stream) {
         if (!document.getElementById(streamId)) {
-            const video = document.createElement('video');
+            var video = document.createElement('video');
             video.id = streamId;
             video.srcObject = stream;
             video.autoplay = true;
-            video.playsInline = true; // Crucial for Android/iOS
+            video.setAttribute('playsinline', 'true');
             video.classList.add('active');
             if (type === 'screen') video.classList.add('remote-screen-share');
             videoGrid.appendChild(video);
@@ -89,13 +84,16 @@ function setupMediaCall(call) {
         }
     });
 
-    call.on('close', () => document.getElementById(streamId)?.remove());
+    call.on('close', function() {
+        var el = document.getElementById(streamId);
+        if (el) el.parentNode.removeChild(el);
+    });
 }
 
 window.shareScreen = async function() {
     try {
         screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        const preview = document.createElement('video');
+        var preview = document.createElement('video');
         preview.id = 'my-screen-preview';
         preview.srcObject = screenStream;
         preview.autoplay = true;
@@ -105,44 +103,43 @@ window.shareScreen = async function() {
         document.getElementById('share-btn').style.display = 'none';
         document.getElementById('stop-share-btn').style.display = 'inline-block';
 
-        // Call everyone with the screen
-        Object.values(connections).forEach(conn => {
-            myPeer.call(conn.peer, screenStream, { metadata: { type: 'screen' } });
-        });
+        for (var peerId in connections) {
+            myPeer.call(peerId, screenStream, { metadata: { type: 'screen' } });
+        }
 
-        screenStream.getVideoTracks()[0].onended = () => window.stopSharing();
-    } catch (err) { console.error("Screen share failed", err); }
+        screenStream.getVideoTracks()[0].onended = function() { window.stopSharing(); };
+    } catch (err) { console.error(err); }
 };
 
 window.stopSharing = function() {
     if (screenStream) {
-        screenStream.getTracks().forEach(t => t.stop());
-        document.getElementById('my-screen-preview')?.remove();
+        screenStream.getTracks().forEach(function(t) { t.stop(); });
+        var el = document.getElementById('my-screen-preview');
+        if (el) el.parentNode.removeChild(el);
 
-        // SIGNAL others to remove the box
-        Object.values(connections).forEach(conn => {
-            conn.send({ type: 'stop-screen' });
-        });
+        for (var peerId in connections) {
+            connections[peerId].send({ type: 'stop-screen' });
+        }
     }
     document.getElementById('share-btn').style.display = 'inline-block';
     document.getElementById('stop-share-btn').style.display = 'none';
 };
 
 window.copyRoomCode = function() {
-    const code = document.getElementById('current-room-id').innerText;
+    var code = document.getElementById('current-room-id').innerText;
     navigator.clipboard.writeText(code);
     document.getElementById('copy-btn').innerText = "Copied!";
-    setTimeout(() => document.getElementById('copy-btn').innerText = "Copy Code", 2000);
+    setTimeout(function() { document.getElementById('copy-btn').innerText = "Copy Code"; }, 2000);
 };
 
-window.toggleAudio = () => {
+window.toggleAudio = function() {
     localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled;
     document.getElementById('mute-btn').innerText = localStream.getAudioTracks()[0].enabled ? "Mute" : "Unmute";
 };
 
-window.toggleVideo = () => {
+window.toggleVideo = function() {
     localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
     document.getElementById('video-btn').innerText = localStream.getVideoTracks()[0].enabled ? "Stop Video" : "Start Video";
 };
 
-window.leaveRoom = () => location.reload();
+window.leaveRoom = function() { location.reload(); };
